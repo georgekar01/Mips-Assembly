@@ -1,0 +1,107 @@
+# KARAGIANNIS GEORGIOS 3190074
+
+	.text
+	.globl main
+
+main:
+	# message before read
+		la $a0, readMsg
+		li $v0, 4
+		syscall
+
+	# user input
+		li $v0, 5
+		syscall	
+		move $t0, $v0
+
+	# validate 4-digit number 
+		lw $t1, checkLow
+		lw $t2, checkHigh
+		ble $t0, $t1, error
+		bgt $t0, $t2, error
+
+	# 'malloc' for d1,d2,d3
+		lw $t1, d1
+		lw $t2, d2
+		lw $t3, d3
+	
+	# 1st digit
+		div $t4, $t0, $t1
+		rem $t0, $t0, $t1
+		sw $t4, temp1
+
+	# 2nd digit
+		div $t4, $t0, $t2
+		rem $t0, $t0, $t2
+		sw $t4, temp2
+	
+	# 3rd digit 
+		div $t4, $t0, $t3
+		rem $t0, $t0, $t3
+		sw $t4, temp3
+
+	# 4th digit
+		sw $t0, temp4
+
+	# encryption
+		lw $t1, temp1
+		lw $t2, temp2
+		lw $t3, temp3
+		lw $t4, temp4
+		lw $t0, d3 
+	
+		addi $t1, $t1, 7
+		addi $t2, $t2, 7	
+		addi $t3, $t3, 7
+		addi $t4, $t4, 7
+
+		rem $t1, $t1, $t0
+ 		rem $t2, $t2, $t0
+		rem $t3, $t3, $t0
+		rem $t4, $t4, $t0
+
+	# build encrypted number
+		move $t0, $zero
+		lw $t5, d3
+		add $t0, $t0, $t3
+		mul $t0, $t0, $t5
+		add $t0, $t0, $t4
+		mul $t0, $t0, $t5
+		add $t0, $t0, $t1
+		mul $t0, $t0, $t5
+		add $t0, $t0, $t2
+
+	# print out the encypted number
+		la $a0, outMsg
+		li $v0, 4
+		syscall      # "outMsg print"
+
+		move $a0, $t0
+		li $v0, 1
+		syscall      # number print
+
+	# exit program
+		li $v0, 10
+		syscall
+	
+error:
+	# error
+		la $a0, errMsg
+		li $v0, 4
+		syscall
+		j main
+
+	.data
+
+temp1:	.word null
+temp2:	.word null
+temp3:	.word null
+temp4:	.word null
+d1:	.word 1000
+d2:	.word 100
+d3:	.word 10
+checkLow:	.word 999
+checkHigh:	.word 9999
+readMsg: 	.asciiz "\nEnter a four digit number to encrypt: "
+outMsg:		.asciiz "Encrypted number is: "
+errMsg: 	.asciiz "Invalid input, not a 4-digit number \n"
